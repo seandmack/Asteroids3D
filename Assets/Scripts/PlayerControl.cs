@@ -16,25 +16,30 @@ public class PlayerControl : MonoBehaviour
 {
 
     public float speed;
-    public float tilt;
-//    public Boundary boundary;
+    public float acceleration;
+    public float thrustSpeed;
+    public float turnSpeed;
+//    public float tilt;
 
     public GameObject shot;
     public Transform shotSpawn;
     public float fireRate;
 
-    private float velocity;
     private float nextFire;
     private Rigidbody rb;
     private AudioSource audioSource;
+    private Quaternion calibrationQuaternion;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         audioSource = GetComponent<AudioSource>();
 
-        // Ship is stationary to start set velocity = 0
-        velocity = 0;
+        // TODO: Add in options to allow player to calibrate on demand
+        CalibrateAccelerometer();
+
+        // Ship is stationary to start set thrustSpeed = 0
+        thrustSpeed = 0;
     }
 
     private void Update()
@@ -50,35 +55,43 @@ public class PlayerControl : MonoBehaviour
         if (Input.GetButton("Fire3"))
         {
             // TODO: Add more advanced acceleration
-            velocity += 0.001f;
+            thrustSpeed += 0.001f;
         }
     }
 
     private void FixedUpdate()
     {
-        float rotateHorizontal = Input.GetAxis ("Horizontal");
-        float rotateVertical = Input.GetAxis ("Vertical");
+        // switching to accelerometer input, commenting following lines out
+        // float rotateHorizontal = Input.GetAxis ("Horizontal");
+        // float rotateVertical = Input.GetAxis ("Vertical");
 
+        Vector3 accelerationRaw = Input.acceleration;
+        Vector3 acceleration = FixAcceleration(accelerationRaw) * turnSpeed;
 
-        rb.transform.Rotate(rotateVertical, rotateHorizontal, 0.0f);
-        // Vector3 movement = new Vector3 (moveHorizontal, 0.0f, moveVertical);
+        // Comment out following and replace for accelerometer input
+        // rb.transform.Rotate(rotateVertical, rotateHorizontal, 0.0f);
+        rb.transform.Rotate(acceleration.y, acceleration.x, 0.0f);
 
-        // rb.velocity = movement * speed;
-        // need to modify velocity more to be based on speed of accceleration of ship
-        rb.transform.position += transform.forward * velocity;
-
-        // this clamps the ship between the boundaries
-        // don't need to clamp it anymore as boundary will now "warp" to opposite side commenting out
-        /* rb.position = new Vector3
-        (
-            Mathf.Clamp(rb.position.x, boundary.xMin, boundary.xMax),
-            Mathf.Clamp(rb.position.y, boundary.yMin, boundary.yMax),
-            Mathf.Clamp(rb.position.z, boundary.zMin, boundary.zMax)
-        );
-        */
+        // need to modify thrustSpeed more to be based on speed of accceleration of ship
+        rb.transform.position += transform.forward * thrustSpeed;
 
         // Commenting out for now as we do not want to tilt
         // Tilt to left or right
         // rb.rotation = Quaternion.Euler(0.0f, 0.0f, rb.velocity.x * -tilt);
+    }
+
+    void CalibrateAccelerometer()
+    //Used to calibrate the Iput.acceleration input
+    {
+        Vector3 accelerationSnapshot = Input.acceleration;
+        Quaternion rotateQuaternion = Quaternion.FromToRotation(new Vector3(0.0f, 0.0f, -1.0f), accelerationSnapshot);
+        calibrationQuaternion = Quaternion.Inverse(rotateQuaternion);
+    }
+
+    Vector3 FixAcceleration(Vector3 acceleration)
+    //Get the 'calibrated' value from the Input
+    {
+        Vector3 fixedAcceleration = calibrationQuaternion * acceleration;
+        return fixedAcceleration;
     }
 }
