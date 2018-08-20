@@ -16,16 +16,18 @@ public class GameController : MonoBehaviour {
     public float startWait;
     public float waveWait;
     public Text scoreText;
-    public Text restartText;
+//    public Text restartText;
     public Text gameOverText;
     public bool hazardsOn;      // Toggle hazards on and off to adjust game controls
+    public GameObject restartButton;
 
     void Start()
     {
         score = 0;
         gameOver = false;
         restart = false;
-        restartText.text = "";
+        // restartText.text = "";
+        restartButton.SetActive(false);
         gameOverText.text = "";
 
         UpdateScore();
@@ -37,16 +39,16 @@ public class GameController : MonoBehaviour {
         }
     }
 
-    private void Update()
-    {
-        if(restart)
-        {
-            if(Input.GetKeyDown(KeyCode.R))
-            {
-                Application.LoadLevel(Application.loadedLevel);
-            }
-        }
-    }
+//    private void Update()
+//    {
+//        if(restart)
+//        {
+//            if(Input.GetKeyDown(KeyCode.R))
+//            {
+//                Application.LoadLevel(Application.loadedLevel);
+//            }
+//        }
+//    }
 
     IEnumerator SpawnWaves()
     {
@@ -68,7 +70,8 @@ public class GameController : MonoBehaviour {
 
             if (gameOver)
             {
-                restartText.text = "Press R to restart.";
+                restartButton.SetActive(true);
+                // restartText.text = "Press R to restart.";
                 restart = true;
                 break;
             }
@@ -90,5 +93,10 @@ public class GameController : MonoBehaviour {
     {
         gameOverText.text = "Game Over";
         gameOver = true;
+    }
+
+    public void RestartGame()
+    {
+        Application.LoadLevel(Application.loadedLevel);
     }
 }

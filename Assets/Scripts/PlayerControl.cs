@@ -23,6 +23,8 @@ public class PlayerControl : MonoBehaviour
 
     public GameObject shot;
     public Transform shotSpawn;
+    public ThrustButtonResponder thrustButton;
+    public FireButtonResponder fireButton;
     public float fireRate;
 
     private float nextFire;
@@ -45,14 +47,18 @@ public class PlayerControl : MonoBehaviour
     private void Update()
     {
 
-        if(Input.GetButton("Fire1") && Time.time > nextFire)
+        // Updateing for touch buttons instead of keyboard, commenting out following line
+        // if(Input.GetButton("Fire1") && Time.time > nextFire)
+        if ( fireButton.CanFire() && Time.time > nextFire)
         {
             nextFire = Time.time + fireRate;
             Instantiate(shot, shotSpawn.position, shotSpawn.rotation);
             audioSource.Play();
         }
 
-        if (Input.GetButton("Fire3"))
+        // Updateing for touch buttons instead of keyboard, commenting out following line
+        //if (Input.GetButton("Fire3"))
+        if ( thrustButton.CanThrust() )
         {
             // TODO: Add more advanced acceleration
             thrustSpeed += 0.001f;
