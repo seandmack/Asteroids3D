@@ -8,15 +8,16 @@ public class GameController : MonoBehaviour {
     private int score;
     private bool gameOver;
     private bool restart;
+    public int activeAsteroidCount;
 
     public GameObject hazard;
     public Vector3 spawnValues;
-    public int hazardCount;
+    // public int hazardCount;
+    public int startAsteroidCount;
     public float spawnWait;
     public float startWait;
     public float waveWait;
     public Text scoreText;
-//    public Text restartText;
     public Text gameOverText;
     public bool hazardsOn;      // Toggle hazards on and off to adjust game controls
     public GameObject restartButton;
@@ -26,7 +27,6 @@ public class GameController : MonoBehaviour {
         score = 0;
         gameOver = false;
         restart = false;
-        // restartText.text = "";
         restartButton.SetActive(false);
         gameOverText.text = "";
 
@@ -39,16 +39,6 @@ public class GameController : MonoBehaviour {
         }
     }
 
-//    private void Update()
-//    {
-//        if(restart)
-//        {
-//            if(Input.GetKeyDown(KeyCode.R))
-//            {
-//                Application.LoadLevel(Application.loadedLevel);
-//            }
-//        }
-//    }
 
     IEnumerator SpawnWaves()
     {
@@ -56,25 +46,49 @@ public class GameController : MonoBehaviour {
 
         while(true)
         {
-            for (int i = 0; i < hazardCount; i++)
+            // Psudocode for wave implementation
+            // while !gamover
+            //    spawnAsteroids(i)
+            //    WaitWhile(!leveComplete);
+            //    asteroids++
+
+            activeAsteroidCount = startAsteroidCount;
+
+            while(!gameOver)
             {
-                // Spawn at a random position on the sphere. Don't really care if it is facing the wrong
-                // way as it will automatically jump to other side
-                // TODO: Ideally the position should be dynamically determined by the radius of the boundary
-                Vector3 spawnPosition = Random.onUnitSphere * 15;
-                Quaternion spawnRotation = Quaternion.identity;
-                Instantiate(hazard, spawnPosition, spawnRotation);
-                yield return new WaitForSeconds(spawnWait);
+                SpawnAsteroids(activeAsteroidCount);
+                yield return new WaitWhile(() => activeAsteroidCount > 0);
+                activeAsteroidCount++;
+                // yield return new WaitForSeconds(waveWait);
             }
-            yield return new WaitForSeconds(waveWait);
+
 
             if (gameOver)
             {
                 restartButton.SetActive(true);
-                // restartText.text = "Press R to restart.";
                 restart = true;
                 break;
             }
+        }
+    }
+
+    private void SpawnAsteroids(int asteroidCount)
+    {
+        // Spawn a single wave with hazrdCount number of asteroids
+        for (int i = 0; i < asteroidCount; i++)
+        {
+            // Spawn at a random position on the sphere. Don't really care if it is facing the wrong
+            // way as it will automatically jump to other side
+            // TODO: Ideally the position should be dynamically determined by the radius of the boundary
+            Vector3 spawnPosition = Random.onUnitSphere * 15;
+            Quaternion spawnRotation = Quaternion.identity;
+            GameObject newObject = Instantiate(hazard, spawnPosition, spawnRotation);
+
+            newObject.transform.localScale = new Vector3(4, 4, 4); // change its local scale in x y z format
+
+            // Wait between spawning new asteroids 
+            // removed this based on initial game with all asteroids appearing at same time
+            // yield return new WaitForSeconds(spawnWait);
         }
     }
 
